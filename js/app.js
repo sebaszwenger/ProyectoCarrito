@@ -13,20 +13,26 @@ cargarEventListeners();
 function cargarEventListeners () {
     listaCursos.addEventListener('click', agregarCurso);
 
+    vaciarCarritoBtn.addEventListener('click', () => {
+        articulosCarrito = [],
+        vaciarHTML()
+    })
 
+    carrito.addEventListener('click', eliminarCursos);
 
 };
 
-//Agrega un curso al carrito
+//Agrega curso al carrito
 function agregarCurso (e) {
     e.preventDefault();
     if (e.target.classList.contains('agregar-carrito')) {
-        const curso = document.querySelector('.card')
+        const curso = e.target.parentElement.parentElement;
         // Envio el curso seleccionado para tomar sus datos
         leerDatosCurso(curso);
     } 
 }
 
+//Lee datos del curso
 function leerDatosCurso(curso) {
     const infoCurso = {
         nombre: curso.querySelector('.info-card h4').textContent,
@@ -35,22 +41,57 @@ function leerDatosCurso(curso) {
         id: curso.querySelector('a').getAttribute('data-id'),
         cantidad: 1
     }
-    // console.log(infoCurso);
-    if (articulosCarrito.some( articulo => articulo.id === infoCurso.id )) {
+    if (articulosCarrito.some( curso => curso.id === infoCurso.id )) {
         const cursos = articulosCarrito.map( curso => { 
             if (curso.id === infoCurso.id) {
-                console.log('articulo repetido');
                 curso.cantidad ++
                 return curso;
             } else {
                 return curso;
             }
         });
-        articulosCarrito = [...cursos]
+        articulosCarrito = [...cursos];
     } else {
-        articulosCarrito = [...articulosCarrito, infoCurso]
+        articulosCarrito = [...articulosCarrito, infoCurso];
+    }
+
+    carritoHTML();
+}
+
+//Muestra el carrito en el HTML
+function carritoHTML(){
+    vaciarHTML();
+    articulosCarrito.forEach( curso => {
+        // console.log(curso);
+        const {nombre, imagen, precio, cantidad, id} = curso;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td> <img src="${imagen}" width=100> </td>
+            <td>${nombre}</td>
+            <td>${precio}</td>
+            <td>${cantidad}</td>
+            <td> <a href="#" class="borrar-curso" data-id="${id}">X</a> </td>
+        `;
+        contenedorCarrito.appendChild(row);
+    });
+}
+
+//Elimino el HTML previo en el carrito
+function vaciarHTML(){
+    while(contenedorCarrito.firstChild) {
+        contenedorCarrito.removeChild(contenedorCarrito.firstChild);
     }
 }
 
+//Elimina un curso del carrito
+function eliminarCursos(e) {
+    e.preventDefault();
+    console.log(e.target.className);
+    if(e.target.className ==='borrar-curso') {
+        const cursoId = e.target.getAttribute('data-id')
 
+        articulosCarrito = articulosCarrito.filter( curso => curso.id !== cursoId);
 
+        carritoHTML();
+    }    
+};
